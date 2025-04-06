@@ -1,7 +1,7 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, StringConstraints
 import motor.motor_asyncio
-from typing import List
+from typing import List, Annotated
 import os
 from dotenv import load_dotenv
 
@@ -16,8 +16,15 @@ client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URI)
 db = client.multimedia_db
 
 class PlayerScore(BaseModel):
-    player_name: str
-    score: int
+    player_name: Annotated[
+        str,
+        StringConstraints(
+            min_length=1,
+            max_length=30,
+            pattern=r"^[a-zA-Z0-9_ ]+$"
+        )
+    ]
+    score: Annotated[int, Field(ge=0, le=1000000)]
 
 @app.get("/")
 async def root():
